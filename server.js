@@ -13,7 +13,6 @@ const logger = require('morgan')
 const testJwtRouter = require('./controllers/test-jwt')
 const authRouter = require('./controllers/auth')
 const userRouter = require('./controllers/users')
-const hootsRouter = require('./controllers/hoots')
 
 // Middleware
 const verifyToken = require('./middleware/verify-token')
@@ -36,7 +35,6 @@ app.use('/test-jwt', testJwtRouter)
 
 // PROTECTED ROUTES
 app.use('/users', userRouter)
-app.use('/hoots', hootsRouter)
 
 app.listen(3000, () => {
 	console.log('The express app is ready!')
