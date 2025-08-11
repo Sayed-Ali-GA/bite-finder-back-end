@@ -10,6 +10,7 @@ const router = express.Router();
 router.use(varifyToken);
 // GET ALL RESTAURANTS
 router.get("/", async (req, res) => {
+  console.log('inside get')
   try {
     const restaurants = await Restaurant.find({})
       .populate("ownerId")
@@ -132,10 +133,11 @@ router.delete("/:restaurantId/comments/:commentId", async (req, res) => {
       return res.status(403).send("You are not allowed to do that");
     }
 
-    // Remove the comment subdocument from array
-    comment.remove();
+    // Remove comment manually instead of using comment.remove()
+    restaurant.comments = restaurant.comments.filter(
+      (c) => c._id.toString() !== req.params.commentId
+    );
 
-    // Save the parent document (restaurant)
     await restaurant.save();
 
     res.status(200).json({ message: "Comment deleted" });
@@ -144,6 +146,7 @@ router.delete("/:restaurantId/comments/:commentId", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
 
 
 

@@ -1,8 +1,9 @@
-const jwt = require('jsonwebtoken');
+const jwt = require("jsonwebtoken");
 
 const verifyToken = (req, res, next) => {
+  console.log("inside verifyToken");
   try {
-    const token = req.headers.authorization.split(' ')[1];
+    const token = req.headers.authorization.split(" ")[1];
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
@@ -10,7 +11,7 @@ const verifyToken = (req, res, next) => {
     console.log(decoded);
     next();
   } catch (err) {
-    res.status(401).json({ err: 'Invalid token.' });
+    res.status(401).json({ err: "Invalid token." });
   }
 };
 

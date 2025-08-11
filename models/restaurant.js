@@ -24,7 +24,7 @@ const foodSchema = new mongoose.Schema({
 
 const restaurantSchema = new mongoose.Schema({
   ownerId: {
-    type: mongoose.Schema.ObjectId,
+    type: mongoose.Schema.Types.ObjectId,
     ref: "User",
   },
   name: {

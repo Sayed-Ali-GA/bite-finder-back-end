@@ -42,3 +42,7 @@ app.use("/users", userRouter);
 app.listen(3000, () => {
   console.log("The express app is ready!");
 });
+
+
+// KILL THE SERVER
+// npx kill-port 3000
