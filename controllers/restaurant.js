@@ -267,35 +267,34 @@ router.put("/:restaurantId/menu/:menuId", async (req, res) => {
 // -------------------------------------------------------------------------
 
 //--------------------------------- DELETE: Delete menu ----------------------------------------
-router.delete("/:restaurantId/:menuId", async (req, res) => {
+router.delete("/:restaurantId/menu/:menuId", async (req, res) => {
   try {
-    const menuItem = await Restaurant.findById(req.params.menuId);
-
-    if (!menuItem.creatorId.equals(req.user._id)) {
-      return res.status(403).send("You are not alloewd");
+    const restaurant = await Restaurant.findById(req.params.restaurantId);
+    if (!restaurant) {
+      return res.status(404).send("Restaurant not found");
     }
 
-    const deletedMenuItem = await Restaurant.findByIdAndDelete(
-      req.params.menuId
-    );
-    res.status(200).json(deletedMenuItem);
+    const menuItem = restaurant.menu.id(req.params.menuId);
+    if (!menuItem) {
+      return res.status(404).send("Menu item not found");
+    }
+
+    if (!menuItem.creatorId.equals(req.user._id)) {
+      return res.status(403).send("You are not allowed to delete this menu item");
+    }
+
+    // Remove menu item by filtering out the one with menuId
+    restaurant.menu = restaurant.menu.filter(item => item._id.toString() !== req.params.menuId);
+
+    await restaurant.save();
+
+    res.status(200).json({ message: "Menu item deleted" });
   } catch (err) {
-    res.status(500).json(err);
+    console.error("Error deleting menu item:", err);
+    res.status(500).json({ error: err.message });
   }
-
-  //   if (!menu) {
-  //     return res.status(404).send("Menu not found, there is no menu");
-  //   }
-
-  //   if (!menu.author.equals(req.user._id)) {
-  //     return res.status(403).send("You're not allowed to do that!");
-  //   }
-
-  //   const deletedMenu = await Menu.findByIdAndDelete(req.params.menuId);
-  //   res.status(200).json(deletedMenu);
-  // } catch (err) {
-  //   res.status(500).json(err);
-  // }
 });
+
+
 
 module.exports = router;
