@@ -154,36 +154,49 @@ router.delete("/:restaurantId/comments/:commentId", async (req, res) => {
 // get all menu items
 router.get("/:restaurantId/menu", async (req, res) => {
   try {
-    const menus = await Restaurant.find({ restaurant: req.params.restaurantId })
+    const restaurant = await Restaurant.findById(req.params.restaurantId)
       .populate("ownerId")
-      .populate("menu.creatorId")
-      .sort({ createdAt: "desc" });
+      .populate("menu.creatorId");
 
-    res.status(200).json(menus);
+    if (!restaurant) {
+      return res.status(404).json({ error: "Restaurant not found" });
+    }
+
+    res.status(200).json(restaurant.menu);
   } catch (err) {
     res.status(500).json(err);
   }
 });
+
 //-------------------------------------------------------------------------
 
 //----------------------  POST: Create Menu -------------------------------------
-router.post("/:restaurantId/menu", async (req, res) => {
+router.post("/:restaurantId/menu/new", async (req, res) => {
   try {
-    req.body.creatorId = req.user._id;
+    req.body.creatorId = req.user._id; // add creatorId to menu item
 
-    // req.body.restaurant = req.params.restaurantId;
+    // Find the restaurant by ID
+    const restaurant = await Restaurant.findById(req.params.restaurantId);
+    if (!restaurant) {
+      return res.status(404).send("Restaurant not found");
+    }
 
-    const menuItem = await Restaurant.create(req.params.restaurantId);
-    menuItem.menu.push(req.body);
-    await menu.save();
-    const newMenuItem = menu.menu[menu.menu.length - 1];
+    // Add the new menu item to the menu array
+    restaurant.menu.push(req.body);
 
-    // menu._doc.author = req.user;
-    res.status(200).json(newMenuItem);
+    // Save the updated restaurant
+    await restaurant.save();
+
+    // Get the newly added menu item (last one)
+    const newMenuItem = restaurant.menu[restaurant.menu.length - 1];
+
+    res.status(201).json(newMenuItem);
   } catch (err) {
+    console.error(err);
     res.status(500).json(err);
   }
 });
+
 //------------------------------------------------------------------------------
 
 //----------------------------- PUT: Update menu --------------------------------------------
@@ -217,24 +230,39 @@ router.post("/:restaurantId/menu", async (req, res) => {
 // });
 //
 router.put("/:restaurantId/:menuId", async (req, res) => {
-  const menuItem = await Restaurant.findById(req.params.menuId);
   try {
-    if (!menuItem.creatorId.equals(req.user._id)) {
-      return res.status(403).send("You are not allowed");
+    // Find the restaurant by ID
+    const restaurant = await Restaurant.findById(req.params.restaurantId);
+    if (!restaurant) {
+      return res.status(404).send("Restaurant not found");
     }
 
-    const updatedMenuItem = await Restaurant.findByIdAndUpdate(
-      req.params.menuId,
-      req.body,
-      { new: true }
-    );
-    updatedMenuItem._doc.creatorId = req.user;
+    // Find the menu item subdocument by menuId
+    const menuItem = restaurant.menu.id(req.params.menuId);
+    if (!menuItem) {
+      return res.status(404).send("Menu item not found");
+    }
 
-    res.status(200).json(updatedMenuItem);
+    // Check if logged-in user is creator of the menu item
+    if (!menuItem.creatorId.equals(req.user._id)) {
+      return res.status(403).send("You are not allowed to update this menu item");
+    }
+
+    // Update menu item fields with req.body
+    menuItem.name = req.body.name || menuItem.name;
+    menuItem.type = req.body.type || menuItem.type;
+    menuItem.description = req.body.description || menuItem.description;
+    menuItem.price = req.body.price || menuItem.price;
+
+    // Save the parent restaurant document
+    await restaurant.save();
+
+    res.status(200).json(menuItem);
   } catch (err) {
     res.status(500).json(err);
   }
 });
+
 
 // -------------------------------------------------------------------------
 
