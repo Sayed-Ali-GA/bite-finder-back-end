@@ -229,7 +229,7 @@ router.post("/:restaurantId/menu/new", async (req, res) => {
 //   }
 // });
 //
-router.put("/:restaurantId/:menuId", async (req, res) => {
+router.put("/:restaurantId/menu/:menuId", async (req, res) => {
   try {
     // Find the restaurant by ID
     const restaurant = await Restaurant.findById(req.params.restaurantId);
