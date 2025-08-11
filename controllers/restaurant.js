@@ -22,7 +22,7 @@ router.get("/", async (req, res) => {
 
 // CREATE A RESTAURANT
 
-router.post("/", async (req, res) => {
+router.post("/new", async (req, res) => {
   try {
     req.body.ownerId = req.user._id;
     const restaurant = await Restaurant.create(req.body);
