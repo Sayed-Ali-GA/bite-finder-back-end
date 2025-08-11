@@ -10,7 +10,6 @@ const cors = require('cors')
 const logger = require('morgan')
 
 // Controllers
-const testJwtRouter = require('./controllers/test-jwt')
 const authRouter = require('./controllers/auth')
 const userRouter = require('./controllers/users')
 
@@ -31,7 +30,6 @@ app.use(logger('dev'))
 
 // PUBLIC ROUTES
 app.use('/auth', authRouter)
-app.use('/test-jwt', testJwtRouter)
 
 // PROTECTED ROUTES
 app.use('/users', userRouter)
