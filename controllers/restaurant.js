@@ -36,37 +36,40 @@ router.post("/", async (req, res) => {
 // SHOW A SINGLE RESTAURANT
 router.get("/:restaurantId", async (req, res) => {
   try {
-    const restaurant = await Restaurant.findById(
-      req.params.restaurantId
-    ).populate("ownerId");
-    res.status(200).json(restaurant);
+    const restaurant = await Restaurant.findById(req.params.restaurantId)
+      .populate("ownerId")
+      .populate("comments.authorId"); // populate each comment's author
+    if (!restaurant) {
+      return res.status(404).json({ err: "Restaurant not found" });
+    }
+    res.json(restaurant);
   } catch (err) {
     res.status(500).json(err);
   }
 });
 
+
 // UPDATE A RESTAURANT
 router.put("/:restaurantId", async (req, res) => {
   try {
-    // find the restaurant
     const restaurant = await Restaurant.findById(req.params.restaurantId);
 
-    // check for permissions
-    if (!restaurant.ownerId.equals(req.body._id)) {
+    if (!restaurant) {
+      return res.status(404).send("Restaurant not found");
+    }
+
+    // check for permissions using logged-in user
+    if (!restaurant.ownerId.equals(req.user._id)) {
       return res.status(403).send("You are not allowed to do that");
     }
 
-    // update restauranr
+    // update restaurant
     const updatedRestaurant = await Restaurant.findByIdAndUpdate(
       req.params.restaurantId,
       req.body,
       { new: true }
     );
 
-    // append req.user to the ownerId property
-    updatedRestaurant.doc.ownerId = req.user;
-
-    // issue json response
     res.status(200).json(updatedRestaurant);
   } catch (err) {
     res.status(500).json(err);
@@ -94,13 +97,18 @@ router.delete("/:restaurantId", async (req, res) => {
 router.post("/:restaurantId/comments", async (req, res) => {
   try {
     req.body.authorId = req.user._id;
-    const restaurant = await Restaurant.findById(req.params.restaurantId);
-    restaurant.comments.push(req.body);
-    await restaurant.save();
+    req.body.text = req.body.text; // ensure comment text is passed
+
+const restaurant = await Restaurant.findById(req.params.restaurantId);
+restaurant.comments.push(req.body);
+await restaurant.save();
+
 
     // find the newly created comment
-    const newComment = Restaurant.comments[Restaurant.comments.length - 1];
-    newComment.doc.authorId = req.user;
+    const newComment = restaurant.comments[restaurant.comments.length - 1];
+
+    newComment.authorId = req.user;
+
     res.status(201).json(newComment);
   } catch (err) {
     res.status(500).json(err);
@@ -110,21 +118,35 @@ router.post("/:restaurantId/comments", async (req, res) => {
 // Delete a comment
 router.delete("/:restaurantId/comments/:commentId", async (req, res) => {
   try {
-    const comment = await Restaurant.findById(req.params.commentId);
-
-    if (!comment.authorId.equals(req.user._id)) {
-      res.status(403).send("You are not allowed to do that");
+    const restaurant = await Restaurant.findById(req.params.restaurantId);
+    if (!restaurant) {
+      return res.status(404).send("Restaurant not found");
     }
 
-    const deletedComment = await Restaurant.findByIdAndDelete(
-      req.params.commentId
-    );
+    const comment = restaurant.comments.id(req.params.commentId);
+    if (!comment) {
+      return res.status(404).send("Comment not found");
+    }
 
-    res.status(200).json(deletedComment);
+    if (comment.authorId.toString() !== req.user._id.toString()) {
+      return res.status(403).send("You are not allowed to do that");
+    }
+
+    // Remove the comment subdocument from array
+    comment.remove();
+
+    // Save the parent document (restaurant)
+    await restaurant.save();
+
+    res.status(200).json({ message: "Comment deleted" });
   } catch (err) {
-    res.status(500).json(err);
+    console.error("Error deleting comment:", err);
+    res.status(500).json({ error: err.message });
   }
 });
+
+
+
 
 // get all menu items
 router.get("/:restaurantId/menu", async (req, res) => {
