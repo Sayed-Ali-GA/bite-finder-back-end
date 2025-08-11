@@ -13,6 +13,8 @@ const logger = require('morgan')
 const authRouter = require('./controllers/auth')
 const userRouter = require('./controllers/users')
 const restaurantRouter= require("./controllers/restaurant")
+const menuRouter= require("./controllers/menu")
+
 
 // Middleware
 const verifyToken = require('./middleware/verify-token')
@@ -29,6 +31,8 @@ app.use(cors())
 app.use(express.json())
 app.use(logger('dev'))
 app.use("/restaurant",restaurantRouter)
+app.use("/restaurant/menu",menuRouter)
+
 
 // PUBLIC ROUTES
 app.use('/auth', authRouter)
