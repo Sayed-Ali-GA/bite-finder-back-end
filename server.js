@@ -12,6 +12,7 @@ const logger = require('morgan')
 // Controllers
 const authRouter = require('./controllers/auth')
 const userRouter = require('./controllers/users')
+const restaurantRouter= require("./controllers/restaurant")
 
 // Middleware
 const verifyToken = require('./middleware/verify-token')
@@ -27,6 +28,7 @@ mongoose.connection.on('connected', () => {
 app.use(cors())
 app.use(express.json())
 app.use(logger('dev'))
+app.use("/restaurant",restaurantRouter)
 
 // PUBLIC ROUTES
 app.use('/auth', authRouter)
