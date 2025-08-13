@@ -25,6 +25,11 @@ mongoose.connection.on("connected", () => {
   console.log(`Connected to MongoDB ${mongoose.connection.name}.`);
 });
 
+
+const cors = require("cors");
+app.use(cors());
+
+
 // MIDDLEWARE
 app.use(cors());
 app.use(express.json());
