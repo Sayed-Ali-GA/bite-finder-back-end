@@ -199,36 +199,7 @@ router.post("/:restaurantId/menu/new", async (req, res) => {
 
 //------------------------------------------------------------------------------
 
-//----------------------------- PUT: Update menu --------------------------------------------
-// router.put("/restaurantId:/:menuId", async (req, res) => {
-//   try {
-//     const menuItem = await Restaurant.findById({
-//       // _id: req.params.menuId,
-//       // restaurant: req.params.restaurantId,
-//     });
 
-//     if (!menu) {
-//       return res.status(404).send("Menu not found, there is no menu");
-//     }
-
-//     if (!menu.author.equals(req.user._id)) {
-//       return res.status(403).send("You're not allowed to do that!");
-//     }
-
-//     const updatedMenu = await Menu.findByIdAndUpdate(
-//       req.params.menuId,
-//       req.body,
-//       { new: true }
-//     );
-
-//     updatedMenu._doc.author = req.user;
-
-//     res.status(200).json(updatedMenu);
-//   } catch (err) {
-//     res.status(500).json(err);
-//   }
-// });
-//
 router.put("/:restaurantId/menu/:menuId", async (req, res) => {
   try {
     // Find the restaurant by ID
