@@ -25,10 +25,16 @@ mongoose.connection.on("connected", () => {
   console.log(`Connected to MongoDB ${mongoose.connection.name}.`);
 });
 
+
+
 // MIDDLEWARE
 app.use(cors());
 app.use(express.json());
 app.use(logger("dev"));
+
+app.get('/', (req, res) => {
+  res.send('Welcome to the app')
+})
 app.use("/restaurant", restaurantRouter);
 // app.use("/restaurant/menu",menuRouter)
 
