@@ -8,6 +8,7 @@ const app = express();
 const mongoose = require("mongoose");
 const cors = require("cors");
 const logger = require("morgan");
+const port = process.env.PORT ? process.env.PORT : '3000';
 
 // Controllers
 const authRouter = require("./controllers/auth");
@@ -45,8 +46,8 @@ app.use("/auth", authRouter);
 // app.use(varifyToken)
 app.use("/users", userRouter);
 
-app.listen(3000, () => {
-  console.log("The express app is ready!");
+app.listen(port, () => {
+  console.log(`The express app is ready on port ${port}!`);
 });
 
 
